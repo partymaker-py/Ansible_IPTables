@@ -1,0 +1,11 @@
+- hosts: all
+  roles:
+  - ssh
+
+- hosts: master
+  roles:
+  - k8s_api
+
+- hosts: all
+  roles:
+  - cluster

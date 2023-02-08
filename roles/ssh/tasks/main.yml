@@ -1,0 +1,59 @@
+---
+- name: Set the policy for the INPUT chain to ACCEPT
+  ansible.builtin.iptables:
+    chain: INPUT
+    policy: ACCEPT
+
+- name: Set the policy for the OUTPUT chain to ACCEPT
+  ansible.builtin.iptables:
+    chain: OUTPUT
+    policy: ACCEPT
+
+- name: Iptables flush filter
+  ansible.builtin.iptables:
+    chain: "{{ item }}"
+    flush: yes
+  with_items:  [ 'INPUT', 'FORWARD', 'OUTPUT' ]
+
+- name: Allow related and established connections
+  ansible.builtin.iptables:
+    chain: INPUT
+    ctstate: ESTABLISHED,RELATED
+    jump: ACCEPT
+
+- name: Create ALLOW_SSH
+  iptables:
+    chain: ALLOW_SSH
+    chain_management: true
+
+- name: Jump to ALLOW_SSH if DST 22
+  ansible.builtin.iptables:
+    chain: INPUT
+    protocol: tcp
+    source: 0.0.0.0/0
+    destination_port: 22
+    jump: ALLOW_SSH
+
+- name: Add Host to ALLOW_SSH
+  ansible.builtin.iptables:
+    chain: ALLOW_SSH
+    source: "{{ item }}"
+    jump: ACCEPT
+  loop:
+    # CHECK THAT YOUR MACHINE IS IN THE LIST!!!
+    - "192.168.5.219"
+    - "192.168.5.201"
+    - "192.168.3.121"
+    - "192.168.2.232"
+    - "192.168.0.197"
+
+- name: Add RETURN RULE to ALLOW_SSH
+  ansible.builtin.iptables:
+    chain: ALLOW_SSH
+    source: 0.0.0.0/0
+    jump: RETURN
+
+- name: Set the policy for the INPUT chain to DROP
+  ansible.builtin.iptables:
+    chain: INPUT
+    policy: DROP

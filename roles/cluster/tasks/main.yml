@@ -1,0 +1,32 @@
+- name: Create ALLOW_EACH_OTHER
+  iptables:
+   chain: ALLOW_EACH_OTHER
+   chain_management: true
+          
+- name: Allow traffic to each other
+  iptables:
+    chain: INPUT
+    source: 0.0.0.0/0
+    jump: ALLOW_EACH_OTHER
+
+- name: Add Host to ALLOW_EACH_OTHER
+  ansible.builtin.iptables:
+    chain: ALLOW_EACH_OTHER
+    source: "{{ item }}"
+    jump: ACCEPT
+  loop:
+  # CHANGE THE VALUES
+  - 172.16.9.170
+  - 172.16.9.150
+  - 172.16.9.151
+  - 172.16.9.152
+  - 172.16.9.153
+  - 172.16.9.154
+  - 172.16.9.155
+  - 172.16.9.159
+  - 172.16.9.160
+- name: Add Host to ALLOW_EACH_OTHER
+  ansible.builtin.iptables:
+    chain: ALLOW_EACH_OTHER
+    source: 0.0.0.0/0
+    jump: RETURN

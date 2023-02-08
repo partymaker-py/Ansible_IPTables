@@ -1,0 +1,50 @@
+- name: Allow 443
+  iptables:
+    chain: INPUT
+    protocol: tcp
+    destination_port: 443
+    source: 0.0.0.0/0
+    jump: ACCEPT
+
+- name: Allow 5151
+  iptables:
+    chain: INPUT
+    protocol: tcp
+    destination_port: 5151
+    source: 0.0.0.0/0
+    jump: ACCEPT
+
+- name: Create ALLOW_6443
+  iptables:
+    chain: ALLOW_6443
+    chain_management: true
+
+- name: Jump to ALLOW_6443 if DST 6443 
+  ansible.builtin.iptables:
+    chain: INPUT
+    protocol: tcp
+    source: 0.0.0.0/0
+    destination_port: 6443
+    jump: ALLOW_6443
+
+- name: Add Host to ALLOW_6443
+  ansible.builtin.iptables:
+    chain: ALLOW_6443
+    source: "{{ item }}"
+    jump: ACCEPT
+  loop:
+  # CHANGE THE VALUES
+  - 192.168.5.219
+  - 192.168.5.201
+  - 192.168.17.215
+  - 192.168.3.121
+  - 192.168.2.232
+  - 192.168.17.28
+  - 192.168.17.29
+  - 192.168.17.30
+
+- name: Add RETURN to ALLOW_6443
+  ansible.builtin.iptables:
+    chain: ALLOW_6443
+    source: 0.0.0.0/0
+    jump: RETURN
